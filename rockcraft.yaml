@@ -1,0 +1,52 @@
+name: chisel
+summary: A distroless-like Chisel image based on Ubuntu
+description: |
+  Chisel can derive a minimal Ubuntu-like Linux distribution
+  using a release database that defines "slices" of existing packages.
+  Slices enable developers to cherry-pick just the files they need
+  from the Ubuntu archives, and combine them to create a new
+  filesystem which can be packaged into an OCI-compliant
+  container image or similar.
+
+  Usage: chisel <command> [<options>...]
+
+  Commands can be classified as follows:
+
+    Basic (general operations):
+      find     Find existing slices
+      info     Show information about package slices
+      help     Show help about a command
+      version  Show version details
+
+    Action (make things happen):
+      cut      Cut a tree with selected slices
+
+  For more information about a command, run 'chisel help <command>'.
+version: "latest"
+license: AGPL-3.0
+
+# Set the version through the chisel part.
+adopt-info: chisel
+
+base: bare
+build-base: ubuntu@24.04
+
+platforms:
+  amd64:
+
+parts:
+  chisel:
+    plugin: nil
+    stage-snaps:
+      - chisel/latest/candidate
+    stage-packages:
+      - libc6_libs
+      - ca-certificates_data
+    stage:
+      - -bin/chrorder
+    override-stage: |
+      craftctl default
+
+      # Set rock version.
+      version="$(${CRAFT_STAGE}/bin/chisel version)"
+      craftctl set version="$version"
